@@ -1,0 +1,9 @@
+{
+  "name": "model-gateway",
+  "version": "0.1.0",
+  "description": "Unified OpenAI/Anthropic-compatible gateway with key rotation",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
