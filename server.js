@@ -340,6 +340,12 @@ const server = http.createServer(async (req, res) => {
 
   try {
     if (pathname === '/' || pathname === '/admin') {
+      const adminPath = path.join(ROOT, 'admin.html');
+      if (fs.existsSync(adminPath)) {
+        const html = fs.readFileSync(adminPath, 'utf8');
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        return res.end(html);
+      }
       res.writeHead(200, { 'Content-Type': 'text/html' });
       return res.end(adminHtml());
     }

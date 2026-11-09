@@ -1,0 +1,28 @@
+<!doctype html>
+<html><head><meta charset=utf-8><title>Model Gateway Admin</title>
+<style>body{font-family:sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem}input,button,textarea,select{padding:.4rem;margin:.2rem}section{border:1px solid #ddd;padding:1rem;margin:1rem 0;border-radius:8px}code{background:#f4f4f4;padding:2px 6px;border-radius:4px}pre{background:#f4f4f4;padding:1rem;border-radius:8px;overflow:auto}</style></head><body>
+<h1>Model Gateway Admin</h1>
+<p>Master key: <code id=mk></code> | Base URL: <code id=bu></code></p>
+<section><h2>Add provider</h2>
+<input id=name placeholder="name"><input id=base placeholder="base url"><select id=type><option value=openai>openai</option><option value=anthropic>anthropic</option></select><br>
+<textarea id=keys placeholder="one key per line" rows=4 cols=60></textarea><br>
+<button onclick=addProvider()>Add</button></section>
+<section><h2>Providers</h2><div id=providers></div></section>
+<section><h2>Models</h2><button onclick=loadModels()>Refresh models</button><pre id=models></pre></section>
+<script>
+const mk=localStorage.getItem('mg_key')||prompt('Master key?');localStorage.setItem('mg_key',mk);document.getElementById('mk').textContent=mk;
+document.getElementById('bu').textContent=location.origin+'/v1';
+async function api(path,opts={}){const r=await fetch(path,{...opts,headers:{'Authorization':'Bearer '+mk,'Content-Type':'application/json',...(opts.headers||{})}});return r.json();}
+async function addProvider(){
+ const keys=document.getElementById('keys').value.split(/\n/).map(s=>s.trim()).filter(Boolean);
+ await api('/api/providers',{method:'POST',body:JSON.stringify({name:document.getElementById('name').value,baseUrl:document.getElementById('base').value,type:document.getElementById('type').value,keys})});
+ loadProviders();
+}
+async function loadProviders(){
+ const d=await api('/api/providers');
+ document.getElementById('providers').innerHTML=d.providers.map(p=>'<div><b>'+p.name+'</b> '+p.type+' '+p.baseUrl+' keys:'+p.keys.length+' models:'+p.models.length+' <button onclick="delProvider(\''+p.id+'\')">delete</button></div>').join('');
+}
+async function delProvider(id){await api('/api/providers/'+id,{method:'DELETE'});loadProviders();}
+async function loadModels(){const d=await api('/v1/models');document.getElementById('models').textContent=JSON.stringify(d,null,2);}
+loadProviders();
+</script></body></html>
